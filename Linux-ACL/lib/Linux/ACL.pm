@@ -2,7 +2,18 @@ package Linux::ACL;
 
 use warnings;
 use strict;
+use vars qw($VERSION @ISA @EXPORT @EXPORT_OK);
 
+require Exporter;
+require DynaLoader;
+
+@EXPORT = qw(getfacl);
+our $VERSION = '0.01';
+
+require XSLoader;
+XSLoader::load('Linux::ACL', $VERSION);
+
+1;
 =head1 NAME
 
 Linux::ACL - The great new Linux::ACL!
@@ -13,7 +24,7 @@ Version 0.01
 
 =cut
 
-our $VERSION = '0.01';
+
 
 
 =head1 SYNOPSIS
@@ -37,16 +48,6 @@ if you don't export anything, such as for a purely object-oriented module.
 =head2 function1
 
 =cut
-
-sub function1 {
-}
-
-=head2 function2
-
-=cut
-
-sub function2 {
-}
 
 =head1 AUTHOR
 
@@ -106,5 +107,3 @@ See http://dev.perl.org/licenses/ for more information.
 
 
 =cut
-
-1; # End of Linux::ACL
