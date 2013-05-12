@@ -5,8 +5,8 @@ use strict;
 use vars qw($VERSION @ISA @EXPORT @EXPORT_OK);
 
 require Exporter;
-require DynaLoader;
 
+@ISA = qw(Exporter);
 @EXPORT = qw(getfacl);
 our $VERSION = '0.01';
 
