@@ -181,18 +181,17 @@ int getfacl_internal(char *filename, HV **out_acl, HV **out_default_acl){	//retu
 }
 
 int setfacl_internal(char *filename, HV *in_acl_hash, HV *in_default_acl_hash){
-	acl_t acl = NULL;
-	acl_entry_t ent;
-	HV *acl_hash;
-	HV *user_hash  = NULL;
-	HV *group_hash = NULL;
-	HE *hash_entry;
-	SV **hash_ref;
 	HV         *acl_hashes[3] = {in_acl_hash,     in_default_acl_hash, NULL};
 	acl_type_t acl_types[3]   = {ACL_TYPE_ACCESS, ACL_TYPE_DEFAULT,    0};
 	int i;
 
 	while(NULL != acl_hashes[i]){
+		acl_t acl = NULL;
+		acl_entry_t ent;
+		HE *hash_entry;
+		SV **hash_ref;
+		HV *user_hash  = NULL;
+		HV *group_hash = NULL;
 		HV *current_acl = acl_hashes[i];
 
 		if(hash_ref = hv_fetch(current_acl, USER_KEY, USER_KEY_LENGTH, 0)){
