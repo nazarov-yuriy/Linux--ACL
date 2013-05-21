@@ -39,17 +39,21 @@ HV* derefHV(SV *hashref){
 	return ret_hash;
 }
 
-void add_to_hash(HV *hash, acl_entry_t *ent, char *key, U32 key_len){
-	acl_permset_t permset;
+void add_perm_to_hash(HV *hash, int r, int w, int x, char *key, U32 key_len){
 	HV* perm_hash = newHV();
-	
-	acl_get_permset(*ent, &permset);
 
-	hv_store(perm_hash, "r", 1, newSViv( acl_get_perm(permset, ACL_READ) ), 0);
-	hv_store(perm_hash, "w", 1, newSViv( acl_get_perm(permset, ACL_WRITE) ), 0);
-	hv_store(perm_hash, "x", 1, newSViv( acl_get_perm(permset, ACL_EXECUTE) ), 0);
+	hv_store(perm_hash, "r", 1, newSViv( r!=0 ), 0);
+	hv_store(perm_hash, "w", 1, newSViv( w!=0 ), 0);
+	hv_store(perm_hash, "x", 1, newSViv( x!=0 ), 0);
 
 	hv_store(hash, key, key_len, newRV_noinc((SV*) perm_hash), 0);
+}
+
+void add_to_hash(HV *hash, acl_entry_t *ent, char *key, U32 key_len){
+	acl_permset_t permset;
+	
+	acl_get_permset(*ent, &permset);
+	add_perm_to_hash(hash, acl_get_perm(permset, ACL_READ), acl_get_perm(permset, ACL_WRITE), acl_get_perm(permset, ACL_EXECUTE), key, key_len);
 }
 
 void set_perm(acl_entry_t ent, mode_t perm)
@@ -164,6 +168,13 @@ int getfacl_internal(char *filename, HV **out_acl, HV **out_default_acl){	//retu
 		hv_store(acl_hash, USER_KEY,  USER_KEY_LENGTH,  newRV_noinc((SV*) ret_acl_uperm), 0);
 		hv_store(acl_hash, GROUP_KEY, GROUP_KEY_LENGTH, newRV_noinc((SV*) ret_acl_gperm), 0);
 		*(acl_hashes[i]) = acl_hash;
+	}
+	if(NULL==*out_acl && NULL==*out_default_acl){
+		printf("by stat\n");
+		*out_acl = newHV();
+		add_perm_to_hash(*out_acl, st.st_mode && S_IRUSR, st.st_mode && S_IWUSR, st.st_mode && S_IXUSR, USER_OBJ_KEY,  USER_OBJ_KEY_LENGTH);
+		add_perm_to_hash(*out_acl, st.st_mode && S_IRGRP, st.st_mode && S_IWGRP, st.st_mode && S_IXGRP, GROUP_OBJ_KEY, GROUP_OBJ_KEY_LENGTH);
+		add_perm_to_hash(*out_acl, st.st_mode && S_IROTH, st.st_mode && S_IWOTH, st.st_mode && S_IXOTH, OTHER_KEY,     OTHER_KEY_LENGTH);
 	}
 
 	return (NULL==*out_acl)?0:( (NULL==*out_default_acl)?1:2 );
