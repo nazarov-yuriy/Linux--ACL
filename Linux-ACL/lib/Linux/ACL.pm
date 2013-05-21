@@ -7,7 +7,7 @@ use vars qw($VERSION @ISA @EXPORT @EXPORT_OK);
 require Exporter;
 
 @ISA = qw(Exporter);
-@EXPORT = qw(getfacl);
+@EXPORT = qw(getfacl setfacl);
 our $VERSION = '0.01';
 
 require XSLoader;
