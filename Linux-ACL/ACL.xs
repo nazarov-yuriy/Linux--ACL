@@ -174,7 +174,6 @@ int getfacl_internal(char *filename, HV **out_acl, HV **out_default_acl){	//retu
 		*(acl_hashes[i]) = acl_hash;
 	}
 	if(NULL==*out_acl && NULL==*out_default_acl){
-		printf("by stat\n");
 		*out_acl = newHV();
 		add_perm_to_hash(*out_acl, st.st_mode && S_IRUSR, st.st_mode && S_IWUSR, st.st_mode && S_IXUSR, USER_OBJ_KEY,  USER_OBJ_KEY_LENGTH);
 		add_perm_to_hash(*out_acl, st.st_mode && S_IRGRP, st.st_mode && S_IWGRP, st.st_mode && S_IXGRP, GROUP_OBJ_KEY, GROUP_OBJ_KEY_LENGTH);
