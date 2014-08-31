@@ -8,7 +8,7 @@ require Exporter;
 
 @ISA = qw(Exporter);
 @EXPORT = qw(getfacl setfacl);
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 require XSLoader;
 XSLoader::load('Linux::ACL', $VERSION);
@@ -20,7 +20,7 @@ Linux::ACL - Perl extension for reading and setting Access Control Lists for fil
 
 =head1 VERSION
 
-Version 0.03
+Version 0.04
 
 =cut
 
