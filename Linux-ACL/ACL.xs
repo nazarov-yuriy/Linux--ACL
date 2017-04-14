@@ -186,7 +186,8 @@ int getfacl_internal(char *filename, HV **out_acl, HV **out_default_acl){	//retu
 int setfacl_internal(char *filename, HV *in_acl_hash, HV *in_default_acl_hash){
 	HV         *acl_hashes[3] = {in_acl_hash,     in_default_acl_hash, NULL};
 	acl_type_t acl_types[3]   = {ACL_TYPE_ACCESS, ACL_TYPE_DEFAULT,    0};
-	int i;
+	int i = 0;
+	int rc = CONSTANT_YES;
 
 	while(NULL != acl_hashes[i]){
 		acl_t acl = NULL;
@@ -210,21 +211,32 @@ int setfacl_internal(char *filename, HV *in_acl_hash, HV *in_default_acl_hash){
 		}
 
 		acl = acl_init(0);
+		if (!acl) {
+			rc = CONSTANT_NO;
+		}
 		if (acl_create_entry(&acl, &ent) == 0){
 			acl_set_tag_type(ent, ACL_USER_OBJ);
 			set_perm(ent, get_perm_from_hash(current_acl, USER_OBJ_KEY, USER_OBJ_KEY_LENGTH));
+		} else {
+			rc = CONSTANT_NO;
 		}
 		if (acl_create_entry(&acl, &ent) == 0){
 			acl_set_tag_type(ent, ACL_GROUP_OBJ);
 			set_perm(ent, get_perm_from_hash(current_acl, GROUP_OBJ_KEY, GROUP_OBJ_KEY_LENGTH));
+		} else {
+			rc = CONSTANT_NO;
 		}
 		if (acl_create_entry(&acl, &ent) == 0){
 			acl_set_tag_type(ent, ACL_MASK);
 			set_perm(ent, get_perm_from_hash(current_acl, MASK_KEY, MASK_KEY_LENGTH));
+		} else {
+			rc = CONSTANT_NO;
 		}
 		if (acl_create_entry(&acl, &ent) == 0){
 			acl_set_tag_type(ent, ACL_OTHER);
 			set_perm(ent, get_perm_from_hash(current_acl, OTHER_KEY, OTHER_KEY_LENGTH));
+		} else {
+			rc = CONSTANT_NO;
 		}
 	
 		if(NULL != user_hash){
@@ -238,6 +250,8 @@ int setfacl_internal(char *filename, HV *in_acl_hash, HV *in_default_acl_hash){
 					acl_set_tag_type(ent, ACL_USER);
 					acl_set_qualifier(ent, &id_p);
 					set_perm(ent, get_perm_from_hash(user_hash, key, key_len));
+				} else {
+					rc = CONSTANT_NO;
 				}
 			}
 		}
@@ -253,18 +267,22 @@ int setfacl_internal(char *filename, HV *in_acl_hash, HV *in_default_acl_hash){
 					acl_set_tag_type(ent, ACL_GROUP);
 					acl_set_qualifier(ent, &id_p);
 					set_perm(ent, get_perm_from_hash(group_hash, key, key_len));
+				} else {
+					rc = CONSTANT_NO;
 				}
 			}
 		}
 
-		acl_set_file(filename, acl_types[i], acl);
+		if (acl_set_file(filename, acl_types[i], acl) == -1) {
+			rc = CONSTANT_NO;
+		}
 
 		acl_free(acl);
 
 		i++;
 	}
 
-	return CONSTANT_YES;
+	return rc;
 }
 
 /*
